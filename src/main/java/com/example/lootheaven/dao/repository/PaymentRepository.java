@@ -1,7 +1,7 @@
 package com.example.lootheaven.dao.repository;
 
 import com.example.lootheaven.dao.models.Payment;
-//import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PaymentRepository {
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
 }

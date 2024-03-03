@@ -1,7 +1,7 @@
 package com.example.lootheaven.dao.repository;
 
 import com.example.lootheaven.dao.models.User;
-//import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository {
+public interface UserRepository extends JpaRepository<User, Long>{
 }
