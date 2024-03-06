@@ -49,4 +49,7 @@ public class AdUnit {
     @Column(name = "active")
     private Boolean active;
 
+    @Column(name = "game_item")
+    private String game;
+
 }

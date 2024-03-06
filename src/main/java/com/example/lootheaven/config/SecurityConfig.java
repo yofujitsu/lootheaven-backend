@@ -30,12 +30,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers( HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers( HttpMethod.GET, "/users/**", "/users/me", "/**").permitAll()
+                        .requestMatchers( HttpMethod.POST, "/auth/login", "/auth/register", "/lots/create").permitAll()
+                        .requestMatchers( HttpMethod.GET, "/users/**", "/users/me", "/**", "/lots/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(LogoutConfigurer::permitAll);
         return http.build();
+    }
+
+    protected void registerAuthentication(AuthenticationManagerBuilder authManagerBuilder) throws Exception {
+        authManagerBuilder
+                .inMemoryAuthentication()
+                .withUser("admin").password("1234").roles("ADMIN");
     }
 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
