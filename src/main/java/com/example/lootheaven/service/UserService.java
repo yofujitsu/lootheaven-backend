@@ -4,12 +4,14 @@ import com.example.lootheaven.dao.models.DTO.UserLoginDTO;
 import com.example.lootheaven.dao.models.User;
 import com.example.lootheaven.dao.models.DTO.UserRegDTO;
 import com.example.lootheaven.dao.repository.UserRepository;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,17 +19,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private CustomUserDetailsService customUserDetailsService;
-    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    public UserService(AuthenticationManager authenticationManager, CustomUserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
+        this.authenticationManager = authenticationManager;
+        this.customUserDetailsService = customUserDetailsService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
@@ -48,20 +58,17 @@ public class UserService {
         return newUser;
     }
 
-    public void login(String username, String password) {
-        // Загружаем пользователя из базы данных по его имени пользователя (логину)
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-
-        // Проверяем правильность введенного пароля
-        if (!userDetails.getPassword().equals(password)) {
-            throw new RuntimeException("Неправильное имя пользователя или пароль");
+    public Optional<User> validateAuthCandidate(String email, String password) {
+        try {
+            User user = userRepository.findByEmail(email);
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                return Optional.of(user);
+            } else {
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            return Optional.empty();
         }
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password));
-
-        // Устанавливаем аутентификационный токен в контекст безопасности
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     public User getUserByUsername(String username) {

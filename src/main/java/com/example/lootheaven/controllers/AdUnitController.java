@@ -17,7 +17,7 @@ public class AdUnitController {
     private AdUnitService adUnitService;
 
     @PostMapping("/create")
-    public ResponseEntity<AdUnit> createNewAdUnit(AdUnit adUnit) {
+    public ResponseEntity<AdUnit> createNewAdUnit(@RequestBody AdUnit adUnit) {
         AdUnit adUnitToCreate = adUnitService.createAdUnit(adUnit);
         return new ResponseEntity<>(adUnit, HttpStatus.CREATED);
     }

@@ -1,5 +1,6 @@
 package com.example.lootheaven.controllers;
 
+import com.example.lootheaven.dao.models.DTO.AuthDTO;
 import com.example.lootheaven.dao.models.DTO.UserLoginDTO;
 import com.example.lootheaven.dao.models.DTO.UserRegDTO;
 import com.example.lootheaven.dao.models.User;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -23,9 +26,23 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginDTO> login(@RequestBody UserLoginDTO user) {
-        userService.login(user.getEmail(), user.getPassword());
-        return new ResponseEntity<>(user, HttpStatus.OK);
+    public ResponseEntity<AuthDTO> login(@RequestBody UserLoginDTO loginDto) {
+        Optional<User> userOptional = userService.validateAuthCandidate(loginDto.getEmail(), loginDto.getPassword());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getActive()) {
+                return ResponseEntity.ok(new AuthDTO(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getUsername(),
+                        user.getRole().name(),
+                        user.getAvatarImg(),
+                        true));
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/register")
